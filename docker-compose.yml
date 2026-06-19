@@ -1,56 +1,23 @@
 services:
-  db:
+  postgres:
     image: postgres:16-alpine
+    container_name: employee-workflow-postgres
     environment:
-      POSTGRES_DB: workflow
       POSTGRES_USER: workflow
       POSTGRES_PASSWORD: workflow
+      POSTGRES_DB: workflow_management
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./backend/db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U workflow -d workflow"]
+      test: ["CMD-SHELL", "pg_isready -U workflow -d workflow_management"]
       interval: 5s
       timeout: 5s
       retries: 10
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-
-  backend:
-    build:
-      context: ./backend
-    environment:
-      DATABASE_URL: postgresql+psycopg://workflow:workflow@db:5432/workflow
-      REDIS_URL: redis://redis:6379/0
-      JWT_SECRET_KEY: change-me-for-local-dev
-      CORS_ORIGINS: '["http://localhost:5173"]'
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend/app:/app/app
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
-
-  frontend:
-    build:
-      context: ./frontend
-    environment:
-      VITE_API_URL: http://localhost:8000/api
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/index.html:/app/index.html
-      - ./frontend/vite.config.ts:/app/vite.config.ts
-    depends_on:
-      - backend
-
 volumes:
-  postgres_data:
+  postgres-data:
+

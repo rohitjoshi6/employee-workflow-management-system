@@ -1,0 +1,20 @@
+{
+  "name": "employee-workflow-management-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-stack internal workflow management system for employees, managers, and admins.",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace backend",
+    "dev:frontend": "npm run dev --workspace frontend",
+    "dev:backend": "npm run dev --workspace backend",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "test": "npm run test --workspace backend && npm run test --workspace frontend"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

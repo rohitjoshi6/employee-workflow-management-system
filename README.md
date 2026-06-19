@@ -1,138 +1,111 @@
 # Employee Workflow Management System
 
-An enterprise-style internal workflow platform where employees submit operational requests, managers approve or reject assigned work, and admins monitor process health across the organization.
+Resume-ready full-stack internal workflow management system for employees, managers, and admins. Employees submit internal requests, managers review approvals with comments, and admins monitor status, audit history, and workflow metrics.
 
-Resume bullet:
+## Repository
 
-> Built a full-stack workflow platform for employees to submit requests, managers to approve tasks, and admins to track process status.
+[https://github.com/rohitjoshi6/employee-workflow-management-system](https://github.com/rohitjoshi6/employee-workflow-management-system)
+
+## Architecture
+
+```mermaid
+flowchart LR
+  UI["React + TypeScript frontend"] --> API["Node.js + Express REST API"]
+  API --> PG[("PostgreSQL")]
+  API --> RBAC["Role-based middleware"]
+  PG --> Tables["users, roles, requests, approvals, comments, audit_logs"]
+```
+
+## Features
+
+- Employees submit internal requests with type, priority, title, description, and due date.
+- Managers view pending approval queues, approve or reject requests, and add comments.
+- Admins track all request status, audit history, and workflow metrics.
+- Role-based access for employee, manager, and admin workflows.
+- Dashboards for pending approvals, completed requests, request history, and metrics.
+- PostgreSQL schema, seed data, Docker Compose, REST API, React UI, reusable components, and tests.
 
 ## Tech Stack
 
-- Frontend: React, TypeScript, Vite, React Router, Axios, Bootstrap, lucide-react
-- Backend: FastAPI, SQLAlchemy, Pydantic, JWT auth, PostgreSQL
-- Platform: Redis dashboard caching, Docker Compose, GitHub Actions CI
-- Quality: backend unit tests, ruff linting, frontend TypeScript build
+- Frontend: React, TypeScript, Vite, CSS modules-style global styling.
+- Backend: Node.js, Express, TypeScript, PostgreSQL via `pg`.
+- Persistence: PostgreSQL with schema and seed SQL.
+- Tests: Vitest, Supertest, React Testing Library.
 
 ## Quick Start
 
-```bash
-docker compose up --build
-```
+1. Copy environment values:
 
-Open:
+   ```bash
+   cp .env.example .env
+   cp .env.example backend/.env
+   ```
 
-- Frontend: http://localhost:5173
-- Backend API docs: http://localhost:8000/docs
-- Health check: http://localhost:8000/health
+2. Start PostgreSQL:
 
-Seed the database after containers are running:
+   ```bash
+   docker compose up -d
+   ```
 
-```bash
-docker compose exec backend python -m app.seed
-```
+3. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+4. Start the API:
+
+   ```bash
+   npm run dev:backend
+   ```
+
+5. In a second terminal, start the frontend:
+
+   ```bash
+   npm run dev:frontend
+   ```
+
+The frontend runs on `http://localhost:5173` and the API on `http://localhost:4000/api`.
 
 ## Demo Users
 
-All demo users use password `Password123!`.
+The API uses the `x-user-id` header for demo authentication.
 
-| Role | Email |
-| --- | --- |
-| Employee | `employee@example.com` |
-| Manager | `manager@example.com` |
-| Admin | `admin@example.com` |
-
-## Environment Variables
-
-Backend:
-
-- `DATABASE_URL`: SQLAlchemy connection string
-- `REDIS_URL`: Redis connection string for cached admin dashboard stats
-- `JWT_SECRET_KEY`: signing secret for access tokens
-- `CORS_ORIGINS`: JSON array of allowed frontend origins
-
-Frontend:
-
-- `VITE_API_URL`: API base URL, defaults to `http://localhost:8000/api`
-
-Examples are included in [backend/.env.example](/Users/rohitjoshi6/Documents/Codex/2026-04-29/build-a-complete-full-stack-project/backend/.env.example) and [frontend/.env.example](/Users/rohitjoshi6/Documents/Codex/2026-04-29/build-a-complete-full-stack-project/frontend/.env.example).
+| Role | User | ID |
+| --- | --- | --- |
+| Employee | Maya Patel | `11111111-1111-1111-1111-111111111111` |
+| Employee | Noah Kim | `22222222-2222-2222-2222-222222222222` |
+| Manager | Elena Garcia | `33333333-3333-3333-3333-333333333333` |
+| Admin | Priya Shah | `44444444-4444-4444-4444-444444444444` |
 
 ## API Routes
 
-Authentication:
+| Method | Route | Roles | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/health` | Public | Health check |
+| `GET` | `/api/auth/me` | Any authenticated user | Current user profile |
+| `GET` | `/api/requests` | Employee, manager, admin | Role-filtered request history |
+| `POST` | `/api/requests` | Employee, admin | Create internal request |
+| `GET` | `/api/approvals/queue` | Manager, admin | Pending approvals queue |
+| `POST` | `/api/requests/:id/status` | Manager, admin | Approve, reject, or comment on request |
+| `GET` | `/api/admin/audit-logs` | Admin | Audit trail |
+| `GET` | `/api/admin/metrics` | Admin | Workflow metrics |
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET /api/auth/me`
+More details are in [docs/api.md](docs/api.md).
 
-Users:
+## Screenshots
 
-- `GET /api/users`
-- `GET /api/users/managers`
+Add screenshots here after running the app locally:
 
-Requests:
+- Employee request submission dashboard
+- Manager approval queue
+- Admin audit and metrics dashboard
 
-- `POST /api/requests`
-- `GET /api/requests/my`
-- `GET /api/requests`
-- `GET /api/requests/{request_id}`
-- `PUT /api/requests/{request_id}`
-- `POST /api/requests/{request_id}/cancel`
+## Resume Bullet Points
 
-Approvals:
+- Built a full-stack internal workflow management system using React, TypeScript, Express, and PostgreSQL with role-based access for employee, manager, and admin workflows.
+- Designed normalized PostgreSQL tables for users, roles, requests, approvals, comments, and audit logs, plus seed data for realistic demo scenarios.
+- Implemented REST APIs for request creation, approval queues, status transitions, comments, audit history, and workflow metrics.
+- Created reusable React components for dashboard cards, request forms, data tables, status badges, and role-aware views.
+- Containerized PostgreSQL with Docker Compose and added environment examples, project documentation, and basic automated tests.
 
-- `GET /api/approvals/queue`
-- `GET /api/approvals/history`
-- `POST /api/approvals/{request_id}/approve`
-- `POST /api/approvals/{request_id}/reject`
-
-Audit and dashboard:
-
-- `GET /api/audit-logs`
-- `GET /api/dashboard/stats`
-
-## Project Architecture
-
-```text
-backend/
-  app/
-    auth/        JWT, password hashing, role guards
-    models/      SQLAlchemy user, request, audit log models
-    routes/      REST API modules
-    schemas/     Pydantic request/response contracts
-    services/    audit logging and Redis-backed dashboard stats
-    tests/       API unit tests
-frontend/
-  src/
-    api/         Axios client
-    components/  reusable layout, badges, tables, forms, states
-    context/     authentication provider
-    hooks/       async data hook
-    pages/       role-specific workflow screens
-```
-
-## Development Commands
-
-Backend:
-
-```bash
-cd backend
-pip install -r requirements.txt
-pytest app/tests
-ruff check app
-```
-
-Frontend:
-
-```bash
-cd frontend
-npm install
-npm run dev
-npm run build
-```
-
-## Core Workflows
-
-- Employees can create requests, review their submissions, edit pending requests, and cancel pending requests.
-- Managers can see assigned pending requests, approve them, reject them with required comments, and view decision history through API routes.
-- Admins can filter all requests, inspect dashboard metrics, and view status distribution backed by short-lived Redis caching.
-- Every create, update, approve, reject, and cancel action writes an audit log entry.
